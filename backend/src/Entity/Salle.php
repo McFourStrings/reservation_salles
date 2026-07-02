@@ -32,8 +32,7 @@ class Salle
     private ?string $equipements = null;
 
     #[ORM\Column]
-    private ?bool $disponibilité = null;
-
+    private ?bool $disponibilité = true;
     /**
      * @var Collection<int, Reservations>
      */
