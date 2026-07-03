@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Entity\Reservations;
+use App\Enum\ResaStatut;
 use App\Repository\ReservationsRepository;
 use App\Repository\SalleRepository;
 use App\Repository\UtilisateurRepository;
@@ -74,7 +75,7 @@ final class ReservationsController extends AbstractController
     {
         // [] = Pas de filtre (on prend tout)
         // ['dateCreation' => 'DESC'] = Tri par date_creation de la plus récente à la plus ancienne
-        $reservations = $reservationsRepository->findBy([], ['dateCreation' => 'DESC']);
+        $reservations = $reservationsRepository->findBy([], ['date_creation' => 'DESC']);
 
         $data = [];
         foreach ($reservations as $reservation) {
@@ -168,7 +169,7 @@ final class ReservationsController extends AbstractController
         }
 
         if (!empty($data['statut'])) {
-            $reservation->setStatut($data['statut']);
+           $reservation->setStatut(ResaStatut::from($data['statut']));
         }
 
 
