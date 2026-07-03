@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/utilisateur', name: 'api_utilisateur_')]
 final class UtilisateurController extends AbstractController
@@ -65,12 +66,10 @@ final class UtilisateurController extends AbstractController
         $data = [];
         foreach ($utilisateurs as $user) {
             $data[] = [
-                'id' => $user->getId(),
                 'nom' => $user->getNom(),
                 'prenom' => $user->getPrenom(),
                 'email' => $user->getEmail(),
-                'role' => $user->getRole()?->value, // .value permet de récupérer la string l'Enum
-                'date_creation' => $user->getDateCreation()?->format('d-m-Y')
+                'role' => $user->getRole()?->value
             ];
         }
 
@@ -93,61 +92,84 @@ final class UtilisateurController extends AbstractController
             'prenom' => $user->getPrenom(),
             'email' => $user->getEmail(),
             'role' => $user->getRole()?->value,
-            'date_creation' => $user->getDateCreation()?->format('d-m-Y')
         ];
 
         return $this->json($data, Response::HTTP_OK);
     }
 
-    #[Route('/update/{id}', name: 'update', methods: ['PUT'])]
-    public function update(
-        ?Utilisateur $user,
-        Request $request,
-        EntityManagerInterface $em
-    ): JsonResponse {
-        if (!$user) {
-            return $this->json(['error' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
-        }
+    #[Route('/me', name: 'me_profile', methods: ['GET'])]
+    #[IsGranted('ROLE_CLIENT', message: 'Accès refusé. Vous devez être connecté.')]
+    public function getMe(): JsonResponse
+    {
+        /** @var Utilisateur $currentUser */
+        $currentUser = $this->getUser();
 
+        $data = [
+            'id' => $currentUser->getId(),
+            'nom' => $currentUser->getNom(),
+            'prenom' => $currentUser->getPrenom(),
+            'email' => $currentUser->getEmail(),
+            'role' => $currentUser->getRole()?->value,
+            'date_creation' => $currentUser->getDateCreation()?->format('d-m-Y')
+        ];
+
+        return $this->json($data, Response::HTTP_OK);
+    }
+
+   
+    #[Route('/me/update', name: 'me_update', methods: ['PUT'])]
+    #[IsGranted('ROLE_CLIENT', message: 'Accès refusé. Vous devez être connecté.')]
+    public function updateMe(
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $passwordHasher
+    ): JsonResponse {
+        /** @var Utilisateur $currentUser */
+        $currentUser = $this->getUser();
         $data = json_decode($request->getContent(), true);
 
         if (!empty($data['nom'])) {
-            $user->setNom($data['nom']);
+            $currentUser->setNom($data['nom']);
         }
         if (!empty($data['prenom'])) {
-            $user->setPrenom($data['prenom']);
+            $currentUser->setPrenom($data['prenom']);
         }
         if (!empty($data['email'])) {
-            $user->setEmail($data['email']);
+            $currentUser->setEmail($data['email']);
         }
-
+        if (!empty($data['password'])) {
+            $hashedPassword = $passwordHasher->hashPassword($currentUser, $data['password']);
+            $currentUser->setPassword($hashedPassword);
+        }
 
         $em->flush();
 
         return $this->json([
-            'message' => 'Utilisateur mis à jour avec succès !',
+            'message' => 'Vos informations ont été mises à jour avec succès !',
             'user' => [
-                'id' => $user->getId(),
-                'nom' => $user->getNom(),
-                'prenom' => $user->getPrenom(),
-                'email' => $user->getEmail(),
-                'role' => $user->getRole()?->value
+                'id' => $currentUser->getId(),
+                'nom' => $currentUser->getNom(),
+                'prenom' => $currentUser->getPrenom(),
+                'email' => $currentUser->getEmail()
             ]
         ], Response::HTTP_OK);
     }
 
-    #[Route('/delete/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(?Utilisateur $user, EntityManagerInterface $em): JsonResponse
+    #[Route('/me/delete', name: 'me_delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_CLIENT', message: 'Accès refusé. Vous devez être connecté.')]
+    public function deleteMe(EntityManagerInterface $em): JsonResponse
     {
-        if (!$user) {
-            return $this->json(['error' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
-        }
+        /** @var Utilisateur $currentUser */
+        $currentUser = $this->getUser();
 
-        $em->remove($user);
+        // Stockage temporaire des infos pour le message avant suppression
+        $nomComplet = $currentUser->getPrenom() . ' ' . $currentUser->getNom();
+
+        $em->remove($currentUser);
         $em->flush();
 
         return $this->json([
-            'message' => sprintf('L\'utilisateur %s %s a été supprimé avec succès !', $user->getPrenom(), $user->getNom())
+            'message' => sprintf('Votre compte (%s) a été supprimé avec succès !', $nomComplet)
         ], Response::HTTP_OK);
     }
 }

@@ -31,6 +31,7 @@ final class SalleController extends AbstractController
         $salle->setDescription($data['description'] ?? null);
         $salle->setLocalisation($data['localisation']);
         $salle->setEquipements($data['equipements'] ?? null);
+        $salle->setDisponibilité(true);
 
         $em->persist($salle);
         $em->flush();
@@ -44,7 +45,7 @@ final class SalleController extends AbstractController
     #[Route('/getAllRooms', name: 'getAllRooms', methods: ['GET'])]
     public function getAll(SalleRepository $salleRepository): JsonResponse
     {
-        $salles = $salleRepository->findAll();
+        $salles = $salleRepository->findBy(['disponibilité' => true]);
 
         $data = [];
         foreach ($salles as $salle) {
@@ -67,7 +68,7 @@ final class SalleController extends AbstractController
     {
         $salle = $salleRepository->find($id);
 
-        if (!$salle) {
+        if (!$salle || !$salle->isDisponibilité()) {
             return $this->json(['error' => 'Salle non trouvée'], Response::HTTP_NOT_FOUND);
         }
 

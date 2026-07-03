@@ -3,7 +3,6 @@ security:
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
-
     providers:
         app_user_provider:
             entity:
@@ -15,17 +14,28 @@ security:
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
 
-        # On ne garde que la protection par Token pour les routes de l'API
+        # Zone publique pour le Login (gérée par le bundle ou ta route dédiée)
+        # Si ta route de login n'utilise pas le guard classique, le firewall 'api' s'en chargera.
+        
         api:
             pattern: ^/api
             stateless: true
+            # block_listeners permet d'éviter que le décodeur JWT bloque les requêtes anonymes
             jwt: ~
+            # On indique à Symfony que les utilisateurs anonymes sont tolérés au niveau du pare-feu
+            # L'access_control prendra ensuite le relais pour restreindre ou non
+            required_badges: [] 
 
     access_control:
+        # 1. Routes totalement publiques (Visiteurs)
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/utilisateur/inscription, methods: [POST], roles: PUBLIC_ACCESS }
+        - { path: ^/api/salle/getAllRooms, methods: [GET], roles: PUBLIC_ACCESS }
+        - { path: ^/api/salle/get_one/\d+, methods: [GET], roles: PUBLIC_ACCESS }
+        - { path: ^/api/utilisateur/get_all, methods: [GET], roles: PUBLIC_ACCESS }
         
-        # Pour l'instant, on commente cette ligne pour ne pas te bloquer tes tests Postman
-        # - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+        # 2. Verrou global : Tout le reste demande une authentification complète
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:
