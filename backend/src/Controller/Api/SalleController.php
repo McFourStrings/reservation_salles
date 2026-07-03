@@ -10,11 +10,14 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/salle', name: 'api_salle_')]
 final class SalleController extends AbstractController
 {
     #[Route('/create_room', name: 'create_room', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN', message: 'Accès refusé. .')]
+
     public function create_room(
         Request $request,
         EntityManagerInterface $em,
@@ -86,6 +89,8 @@ final class SalleController extends AbstractController
     }
 
     #[Route('/update/{id}', name: 'update', methods: ['PUT'])]
+    #[IsGranted('ROLE_ADMIN', message: 'Accès refusé. ')]
+
     public function update(
         ?Salle $salle,
         Request $request,
@@ -134,17 +139,23 @@ final class SalleController extends AbstractController
     }
 
     #[Route('/delete/{id}', name: 'delete',methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN', message: 'Accès refusé. ')]
+
     public function delete(?Salle $salle, EntityManagerInterface $em): JsonResponse
     {
         if(!$salle){
             return $this->json(['error' => 'Salle non trouvée'], Response::HTTP_NOT_FOUND);
         }
 
-        $em->remove($salle);
+        if (!$salle->isDisponibilité()) {
+            return $this->json(['message' => 'Cette salle est déjà désactivée.'], Response::HTTP_BAD_REQUEST);
+        }
+
+       $salle->setDisponibilité(false);
         $em->flush();
 
         return $this->json([
-            'message'=>'Salle supprimée avec succès!'
+            'message'=>'Salle désactivée avec succès!'
         ], Response::HTTP_OK);
     }
 }

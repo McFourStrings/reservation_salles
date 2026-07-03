@@ -32,9 +32,8 @@ security:
         - { path: ^/api/utilisateur/inscription, methods: [POST], roles: PUBLIC_ACCESS }
         - { path: ^/api/salle/getAllRooms, methods: [GET], roles: PUBLIC_ACCESS }
         - { path: ^/api/salle/get_one/\d+, methods: [GET], roles: PUBLIC_ACCESS }
-        - { path: ^/api/utilisateur/get_all, methods: [GET], roles: PUBLIC_ACCESS }
         
-        # 2. Verrou global : Tout le reste demande une authentification complète
+        # 2. Verrou global : Tout le reste (y compris get_all, delete, me...) demande une authentification
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

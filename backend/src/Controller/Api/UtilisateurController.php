@@ -57,6 +57,8 @@ final class UtilisateurController extends AbstractController
     }
 
     #[Route('/get_all', name: 'get_all', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN', message: 'Accès refusé. ')]
+
     public function getAll(UtilisateurRepository $utilisateurRepository): JsonResponse
     {
         //  Récupérer tous les utilisateurs depuis la BDD
@@ -66,6 +68,7 @@ final class UtilisateurController extends AbstractController
         $data = [];
         foreach ($utilisateurs as $user) {
             $data[] = [
+                'id' => $user->getId(),
                 'nom' => $user->getNom(),
                 'prenom' => $user->getPrenom(),
                 'email' => $user->getEmail(),
@@ -78,6 +81,8 @@ final class UtilisateurController extends AbstractController
 
 
     #[Route('/get_one/{id}', name: 'get_one', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN', message: 'Accès refusé. ')]
+
     public function getOne(int $id, UtilisateurRepository $utilisateurRepository): JsonResponse
     {
         $user = $utilisateurRepository->find($id);
@@ -116,7 +121,7 @@ final class UtilisateurController extends AbstractController
         return $this->json($data, Response::HTTP_OK);
     }
 
-   
+
     #[Route('/me/update', name: 'me_update', methods: ['PUT'])]
     #[IsGranted('ROLE_CLIENT', message: 'Accès refusé. Vous devez être connecté.')]
     public function updateMe(
@@ -170,6 +175,31 @@ final class UtilisateurController extends AbstractController
 
         return $this->json([
             'message' => sprintf('Votre compte (%s) a été supprimé avec succès !', $nomComplet)
+        ], Response::HTTP_OK);
+    }
+
+    #[Route('/delete/{id}', name: 'delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN', message: 'Accès refusé. ')]
+    public function delete(?Utilisateur $utilisateur, EntityManagerInterface $em): JsonResponse
+    {
+        if (!$utilisateur) {
+            return $this->json(['error' => 'Utilisateur non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        /** @var Utilisateur $currentUser */
+        $currentUser = $this->getUser();
+
+        // On empêche l'admin de se supprimer lui-même
+        if ($currentUser->getId() === $utilisateur->getId()) {
+            return $this->json([
+                'error' => 'Action impossible. Vous ne pouvez pas supprimer votre propre compte administrateur depuis cette route.'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+        $em->remove($utilisateur);
+        $em->flush();
+
+        return $this->json([
+            'message' => 'Utilisateur supprimé avec succès!'
         ], Response::HTTP_OK);
     }
 }

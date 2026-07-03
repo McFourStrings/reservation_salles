@@ -6,7 +6,6 @@ use App\Entity\Reservations;
 use App\Enum\ResaStatut;
 use App\Repository\ReservationsRepository;
 use App\Repository\SalleRepository;
-use App\Repository\UtilisateurRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -91,6 +90,7 @@ final class ReservationsController extends AbstractController
     }
 
     #[Route('/getAllResa', name: 'getAllResa', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN', message: 'Accès réservé aux administrateurs.')]
     public function getAll(ReservationsRepository $reservationsRepository): JsonResponse
     {
         $reservations = $reservationsRepository->findBy([], ['date_creation' => 'DESC']);
@@ -134,8 +134,8 @@ final class ReservationsController extends AbstractController
             ], Response::HTTP_FORBIDDEN);
         }
 
-        $statutActuel = $reservation->getStatut(); 
-        
+        $statutActuel = $reservation->getStatut();
+
         if ($statutActuel === ResaStatut::ANNULE || $statutActuel === ResaStatut::CONFIRME) {
             return $this->json([
                 'error' => sprintf('Accès interdit. Cette réservation est "%s" et ne peut plus être modifiée.', $statutActuel->value)
@@ -159,7 +159,7 @@ final class ReservationsController extends AbstractController
 
             if ($statutDemande === ResaStatut::ANNULE && $statutActuel === ResaStatut::STAND_BY) {
                 $reservation->setStatut(ResaStatut::ANNULE);
-                $statutActuel = ResaStatut::ANNULE; 
+                $statutActuel = ResaStatut::ANNULE;
             }
         }
 
@@ -192,6 +192,7 @@ final class ReservationsController extends AbstractController
     }
 
     #[Route('/delete/{id}', name: 'delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN', message: 'Accès refusé. Seul un administrateurs peut supprimer une réservation.')]
     public function delete(?Reservations $reservation, EntityManagerInterface $em): JsonResponse
     {
         if (!$reservation) {
@@ -230,5 +231,39 @@ final class ReservationsController extends AbstractController
                 'localisation' => $reservation->getSalle()?->getLocalisation()
             ]
         ];
+    }
+
+    #[Route('/admin/update-status/{id}', name: 'admin_update_status', methods: ['PUT'])]
+    #[IsGranted('ROLE_ADMIN', message: 'Accès réservé aux administrateurs.')]
+    public function adminUpdateStatus(
+        ?Reservations $reservation,
+        Request $request,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        if (!$reservation) {
+            return $this->json(['error' => 'Réservation introuvable.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        if (empty($data['statut'])) {
+            return $this->json(['error' => 'Le champ statut est requis.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // On cherche si la valeur envoyée correspond bien à un de tes Enums
+        $newStatus = ResaStatut::tryFrom($data['statut']);
+
+        if (!$newStatus) {
+            return $this->json(['error' => 'Statut invalide.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // L'admin a tous les droits : on applique directement le nouveau statut
+        $reservation->setStatut($newStatus);
+        $em->flush();
+
+        return $this->json([
+            'message' => sprintf('Le statut de la réservation %d a été modifié avec succès !', $reservation->getId()),
+            'statut' => $reservation->getStatut()->value
+        ], Response::HTTP_OK);
     }
 }
