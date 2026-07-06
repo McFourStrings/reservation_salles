@@ -696,3 +696,95 @@ button {
     transform: translateY(-2px);
     box-shadow: 0 5px 10px rgba(0, 229, 255, 0.05);
 }
+
+/* ==========================================================================
+   Section : Grille et Cartes Utilisateurs (Dashboard Admin)
+   ========================================================================== */
+
+/* Bouton Retour spécifique au Dashboard */
+.dashboard button {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 2rem;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.dashboard button:hover {
+    border-color: #ffffff;
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Grille de disposition des cartes utilisateurs */
+.users-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+    text-align: left; /* Aligne le texte à gauche à l'intérieur de la grille */
+}
+
+/* Style de la carte utilisateur individuelle */
+.user-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.user-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Nom et prénom de l'utilisateur */
+.user-card h3 {
+    color: #ffffff;
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 0.5rem;
+}
+
+/* Détails (Email) */
+.user-card p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.user-card p strong {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+}
+
+.user-card button {
+    width: 100%;
+    margin-top: 1.25rem;
+    padding: 0.6rem;
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.user-card button:hover {
+    background-color: rgba(255, 51, 51, 0.1);
+    border-color: var(--danger);
+    color: var(--danger);
+}
