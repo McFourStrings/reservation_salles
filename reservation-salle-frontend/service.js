@@ -65,3 +65,16 @@ export default function getAllRooms(){
 export function getRoomById(id){
     return client.get(`/salle/get_one/${id}`);
 }
+
+
+export function getMyReservations(){
+    return client.get('/reservations/my-reservations');
+}
+
+export function createResa(data){
+    return client.post('/reservations/create', data);
+}
+
+export function updateResa(id, data) {
+    return client.put(`/reservations/update/${id}`, data);
+}

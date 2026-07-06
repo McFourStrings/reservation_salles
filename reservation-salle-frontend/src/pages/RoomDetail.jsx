@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getRoomById } from '../../service.js';
+import { getRoomById, createResa } from '../../service.js';
 import AuthContext from '../Context/AuthContext.jsx';
 
 
@@ -12,6 +12,15 @@ const RoomDetail = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const { isLogged } = useContext(AuthContext);
+    const [showForm, setShowForm] = useState(false);
+
+
+    const [reservationData, setReservationData] = useState({
+        date: '',
+        heure_debut: '',
+        heure_fin: '',
+        salle_id: id
+    });
 
     useEffect(() => {
         const fetchRoomData = async () => {
@@ -31,6 +40,28 @@ const RoomDetail = () => {
             fetchRoomData();
         }
     }, [id]);
+
+
+    const handleResaChange = (e) => {
+        setReservationData({
+            ...reservationData,
+            [e.target.id]: e.target.value
+        });
+    };
+
+    const handleResaSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await createResa(reservationData);
+            alert(response.data.message); 
+            
+            setShowForm(false);
+            setReservationData({ date: '', heure_debut: '', heure_fin: '', salle_id: id });
+        } catch (err) {
+            console.error(err);
+            alert(err.response?.data?.error || "Impossible de réserver sur ce créneau.");
+        }
+    };
 
     if (loading) {
         return <div className="loading">Chargement des détails de la salle...</div>;
@@ -65,14 +96,35 @@ const RoomDetail = () => {
                             <p>{room.equipements}</p>
                         </div>
                     )}
+                    
                     {!isLogged ? (
                         <p className="login-prompt" onClick={() => navigate('/login')}>
                             Pour réserver une salle, veuillez vous connecter en cliquant ici
                         </p>
-                    ) : ( 
-                    <button className="btn-reserve" onClick={() => alert('Bientôt disponible !')}>
-                        Réserver cette salle
-                    </button> )}
+                    ) : (
+                        !showForm ? (
+                            <button className="btn-reserve" onClick={() => setShowForm(true)}>
+                                Réserver cette salle
+                            </button>
+                        ) : (
+                            <form onSubmit={handleResaSubmit}>
+                                <h3>Choisir un créneau</h3>
+
+                                <label htmlFor="date">Date</label>
+                                <input type="date" id="date" required value={reservationData.date} onChange={handleResaChange} />
+
+                                <label htmlFor="heure_debut">Heure de début</label>
+                                <input type="time" id="heure_debut" required value={reservationData.heure_debut} onChange={handleResaChange} />
+
+                                <label htmlFor="heure_fin">Heure de fin</label>
+                                <input type="time" id="heure_fin" required value={reservationData.heure_fin} onChange={handleResaChange} />
+
+                                <button type="submit">Confirmer la réservation</button>
+                                <button type="button" onClick={() => setShowForm(false)}>Annuler</button>
+                            </form>
+                        )
+                       
+                    )}
 
                 </div>
             )}

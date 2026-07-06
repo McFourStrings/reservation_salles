@@ -12,7 +12,7 @@ import HomePage from './pages/HomePage';
 import Rooms from './pages/Rooms';
 import RoomDetail from './pages/RoomDetail';
 import Profil from './pages/Profil';
-
+import DashBoard from './pages/DashBoard';
 
 import './App.css'
 
@@ -33,6 +33,8 @@ function App() {
           <Route path="/rooms" element={<Rooms />} />
           <Route path="/roomdetail/:id" element={<RoomDetail />} />
           <Route path="/me" element={<Profil />} />
+          <Route path="/admin" element={<DashBoard />} />
+
 
 
         </Routes>

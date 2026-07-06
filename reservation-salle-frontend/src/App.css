@@ -394,3 +394,305 @@ button {
     opacity: 1;
     transform: translateY(1px); /* Léger effet d'enfoncement mécanique */
 }
+
+/* ==========================================================================
+   Section : Liste des Réservations Client
+   ========================================================================== */
+
+/* Conteneur principal de la liste */
+.list-reservation {
+    margin-top: 3rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 2rem;
+}
+
+.list-reservation h3 {
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+    color: #ffffff;
+}
+
+/* Redéfinition propre de la liste pour en faire une grille de cartes */
+.rooms-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+/* Style de base d'une carte Réservation */
+.rooms-list li {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+
+
+/* Mise en valeur des titres de salles à l'intérieur des cartes */
+.rooms-list li strong {
+    color: #ffffff;
+    font-size: 1.1rem;
+}
+
+/* Conteneur des actions (boutons) en bas de carte */
+.rooms-list li div {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* ==========================================================================
+   Boutons Spécifiques aux Cartes
+   ========================================================================== */
+
+/* Bouton Mettre à jour (Style secondaire discret) */
+.rooms-list button {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: #ffffff;
+}
+
+.rooms-list button:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: #ffffff;
+}
+
+/* Bouton spécifique pour l'annulation (Texte rouge au survol) */
+.rooms-list button[style*="color: red"], 
+.rooms-list button.btn-cancel {
+    color: var(--text-muted) !important; /* Discret par défaut */
+}
+
+.rooms-list button[style*="color: red"]:hover,
+.rooms-list button.btn-cancel:hover {
+    background-color: rgba(255, 51, 51, 0.1) !important;
+    border-color: var(--danger) !important;
+    color: var(--danger) !important;
+}
+
+/* ==========================================================================
+   Sous-Formulaire d'Édition En-Carte
+   ========================================================================== */
+
+.rooms-list form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.rooms-list form h4 {
+    color: var(--accent-cyan);
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.rooms-list form label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.6rem;
+    margin-bottom: 0.2rem;
+}
+
+.rooms-list form input {
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    color: #ffffff;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.rooms-list form input:focus {
+    border-color: var(--accent-cyan);
+    outline: none;
+}
+
+/* Bouton de sauvegarde à l'intérieur du formulaire */
+.rooms-list form button[type="submit"] {
+    background-color: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    color: #000000;
+    font-weight: 600;
+}
+
+.rooms-list form button[type="submit"]:hover {
+    background-color: var(--accent-cyan-hover);
+    border-color: var(--accent-cyan-hover);
+}
+
+/* ==========================================================================
+   Formulaire de Création de Réservation (Page RoomDetail)
+   ========================================================================== */
+
+/* Ciblage du formulaire de réservation */
+.room-card form {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    padding: 2rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    max-width: 450px;
+}
+
+.room-card form h3 {
+    color: #ffffff;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+/* Gestion des étiquettes et des champs de saisie */
+.room-card form label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    margin-bottom: 0.3rem;
+    font-weight: 500;
+}
+
+.room-card form input {
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    color: #ffffff;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Changement de couleur des icônes calendrier/horloge par défaut du navigateur */
+.room-card form input::-webkit-calendar-picker-indicator {
+    filter: invert(1); /* Rend l'icône blanche pour correspondre au thème sombre */
+    cursor: pointer;
+}
+
+.room-card form input:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.15);
+    outline: none;
+}
+
+/* Conteneur implicite ou gestion des boutons du formulaire */
+.room-card form button {
+    padding: 0.8rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    width: 100%;
+}
+
+/* Bouton principal : Confirmer la réservation */
+.room-card form button[type="submit"] {
+    background-color: var(--accent-cyan);
+    border: 1px solid var(--accent-cyan);
+    color: #000000;
+    margin-top: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 229, 255, 0.2);
+}
+
+.room-card form button[type="submit"]:hover {
+    background-color: var(--accent-cyan-hover);
+    border-color: var(--accent-cyan-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 229, 255, 0.3);
+}
+
+/* Bouton secondaire : Annuler */
+.room-card form button[type="button"] {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    margin-top: 0.75rem;
+}
+
+.room-card form button[type="button"]:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: #ffffff;
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   Section : Dashboard Admin (Menu Principal)
+   ========================================================================== */
+
+/* Conteneur principal */
+.dashboard {
+    max-width: 1000px;
+    margin: 4rem auto;
+    padding: 0 2rem;
+    text-align: center;
+}
+
+.dashboard h1 {
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 3rem;
+    letter-spacing: 0.5px;
+}
+
+/* Grille pour les choix d'administration */
+.admin-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 2rem;
+}
+
+/* Style des tuiles de navigation */
+.adminChoices {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    color: #ffffff;
+    font-size: 1.25rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Effets au survol (Hover) : Élévation et Halo Cyan */
+.adminChoices:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-cyan);
+    background-color: rgba(5, 5, 5, 0.4); /* Assombrissement léger du fond */
+    box-shadow: 0 10px 20px rgba(0, 229, 255, 0.1);
+    color: var(--accent-cyan);
+}
+
+/* Effet d'enfoncement mécanique au clic */
+.adminChoices:active {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 229, 255, 0.05);
+}
