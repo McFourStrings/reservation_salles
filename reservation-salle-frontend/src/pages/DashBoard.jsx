@@ -432,7 +432,6 @@ const DashBoard = () => {
                                 id="equipements"
                                 value={formData.equipements}
                                 onChange={handleChange}
-                                required
                             />
 
                             <label htmlFor="description">Description de la salle</label>
@@ -440,7 +439,6 @@ const DashBoard = () => {
                                 id="description"
                                 value={formData.description}
                                 onChange={handleChange}
-                                required
                                 rows="5"
                                 style={{ resize: 'none' }}
                             />
