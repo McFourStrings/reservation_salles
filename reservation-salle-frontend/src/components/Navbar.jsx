@@ -41,9 +41,11 @@ const Navbar = () => {
             <div className="navbar-auth">
                 {isLogged ? (
                     <div className="user-profile-menu">
+                        {!admin && (
                         <span className="welcome-text" onClick={() => navigate('/me')}>
-                            👋 {'Mon Profil'}
+                             {'Mon Profil'}
                         </span>
+                        )}
                         <button className="btn-logout" onClick={handleLogout}>
                             Déconnexion
                         </button>

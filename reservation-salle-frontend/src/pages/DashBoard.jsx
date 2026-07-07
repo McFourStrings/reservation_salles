@@ -56,6 +56,15 @@ const DashBoard = () => {
 
     const [reservations, setReservations] = useState([]);
 
+    const [showAllResa, setShowAllResa] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [showStandBy, setShowStandBy] = useState(false);
+    const [showAnnule, setShowAnnule] = useState(false);
+
+    const confirm = reservations.filter(resa => resa.statut === 'confirme');
+    const standby = reservations.filter(resa => resa.statut === 'stand_by');
+    const annule = reservations.filter(resa => resa.statut === 'annule');
+
     const fetchResa = async () => {
         try {
             const response = await getAllResa();
@@ -192,9 +201,9 @@ const DashBoard = () => {
         <div className="dashboard">
             <h1>Que voulez vous faire?</h1>
             <ul className="admin-list">
-                <li onClick={() => { setGestionClients(true), setGestionResa(false), setGestionSalles(false) }} className="adminChoices">Gestion des clients</li>
-                <li onClick={() => { setGestionSalles(true), setGestionClients(false), setGestionResa(false) }} className="adminChoices">Gestion des salles</li>
-                <li onClick={() => { setGestionResa(true), setGestionClients(false), setGestionSalles(false) }} className="adminChoices">Gestion des réservations</li>
+                <li onClick={() => { setGestionClients(true), setGestionResa(false), setGestionSalles(false), setShowAllResa(false), setShowAnnule(false), setShowConfirm(false), setShowStandBy(false) }} className="adminChoices">Gestion des clients</li>
+                <li onClick={() => { setGestionSalles(true), setGestionClients(false), setGestionResa(false),setShowAllResa(false), setShowAnnule(false), setShowConfirm(false), setShowStandBy(false) }} className="adminChoices">Gestion des salles</li>
+                <li onClick={() => { setGestionResa(true), setGestionClients(false), setGestionSalles(false), setShowAllResa(false), setShowAnnule(false), setShowConfirm(false), setShowStandBy(false) }} className="adminChoices">Gestion des réservations</li>
             </ul>
 
             {gestionClients && (
@@ -212,7 +221,18 @@ const DashBoard = () => {
             )}
 
             {gestionResa && (
-                <ul className="rooms-list">
+                <>
+                <br/>
+                <h1>Gestion des réservations</h1>
+ <ul className="admin-list">
+                            <li className="adminChoices" onClick={() => { setShowAllResa(true), setShowAnnule(false), setShowConfirm(false), setShowStandBy(false) }}>Afficher tout</li>
+                            <li className="adminChoices" onClick={() => { setShowAllResa(false), setShowAnnule(false), setShowConfirm(true), setShowStandBy(false) }}>Réservations confirmées</li>
+                            <li className="adminChoices" onClick={() => { setShowAllResa(false), setShowAnnule(false), setShowConfirm(false), setShowStandBy(true) }}>Réservations en attente</li>
+                            <li className="adminChoices" onClick={() => { setShowAllResa(false), setShowAnnule(true), setShowConfirm(false), setShowStandBy(false) }}>Réservation annulées</li>
+                        </ul>
+                        
+
+              {showAllResa && (  <ul className="rooms-list">
                     {reservations.map((resa) => (
                         <li key={resa.id}>
                             Salle <strong>{resa.salle.nom}</strong> située à {resa.salle.localisation} réservée le {resa.date_creation} <br />
@@ -235,7 +255,80 @@ const DashBoard = () => {
                             </div>
                         </li>
                     ))}
-                </ul>
+                </ul>)}
+                {showAnnule && <ul className="rooms-list">
+                    {annule.map((resa) => (
+                        <li key={resa.id}>
+                            Salle <strong>{resa.salle.nom}</strong> située à {resa.salle.localisation} réservée le {resa.date_creation} <br />
+                            Événement prévu le {resa.date} de {resa.heure_debut} à {resa.heure_fin} <br />
+                            Statut : {resa.statut} <br />
+                            Réservée par : {`${resa.utilisateur.prenom} ${resa.utilisateur.nom}`} <br />
+                            Contact : {resa.utilisateur.email} <br />
+                            <div style={{ marginTop: '1rem' }}>
+                                <label htmlFor={`status-${resa.id}`} style={{ marginRight: '0.5rem', fontSize: '0.9rem' }}>Modifier le statut : </label>
+                                <select
+                                    id={`status-${resa.id}`}
+                                    value={resa.statut}
+                                    onChange={(e) => handleStatusChange(resa.id, e.target.value)}
+                                    style={{ padding: '0.3rem', borderRadius: '4px', backgroundColor: '#222', color: '#fff', border: '1px solid #44' }}
+                                >
+                                    <option value="stand_by">Stand-by</option>
+                                    <option value="confirme">Confirmé</option>
+                                    <option value="annule">Annulé</option>
+                                </select>
+                            </div>
+                        </li>
+                    ))}
+                </ul>}
+                  {showConfirm && <ul className="rooms-list">
+                    {confirm.map((resa) => (
+                        <li key={resa.id}>
+                            Salle <strong>{resa.salle.nom}</strong> située à {resa.salle.localisation} réservée le {resa.date_creation} <br />
+                            Événement prévu le {resa.date} de {resa.heure_debut} à {resa.heure_fin} <br />
+                            Statut : {resa.statut} <br />
+                            Réservée par : {`${resa.utilisateur.prenom} ${resa.utilisateur.nom}`} <br />
+                            Contact : {resa.utilisateur.email} <br />
+                            <div style={{ marginTop: '1rem' }}>
+                                <label htmlFor={`status-${resa.id}`} style={{ marginRight: '0.5rem', fontSize: '0.9rem' }}>Modifier le statut : </label>
+                                <select
+                                    id={`status-${resa.id}`}
+                                    value={resa.statut}
+                                    onChange={(e) => handleStatusChange(resa.id, e.target.value)}
+                                    style={{ padding: '0.3rem', borderRadius: '4px', backgroundColor: '#222', color: '#fff', border: '1px solid #44' }}
+                                >
+                                    <option value="stand_by">Stand-by</option>
+                                    <option value="confirme">Confirmé</option>
+                                    <option value="annule">Annulé</option>
+                                </select>
+                            </div>
+                        </li>
+                    ))}
+                </ul>}
+                  {showStandBy && <ul className="rooms-list">
+                    {standby.map((resa) => (
+                        <li key={resa.id}>
+                            Salle <strong>{resa.salle.nom}</strong> située à {resa.salle.localisation} réservée le {resa.date_creation} <br />
+                            Événement prévu le {resa.date} de {resa.heure_debut} à {resa.heure_fin} <br />
+                            Statut : {resa.statut} <br />
+                            Réservée par : {`${resa.utilisateur.prenom} ${resa.utilisateur.nom}`} <br />
+                            Contact : {resa.utilisateur.email} <br />
+                            <div style={{ marginTop: '1rem' }}>
+                                <label htmlFor={`status-${resa.id}`} style={{ marginRight: '0.5rem', fontSize: '0.9rem' }}>Modifier le statut : </label>
+                                <select
+                                    id={`status-${resa.id}`}
+                                    value={resa.statut}
+                                    onChange={(e) => handleStatusChange(resa.id, e.target.value)}
+                                    style={{ padding: '0.3rem', borderRadius: '4px', backgroundColor: '#222', color: '#fff', border: '1px solid #44' }}
+                                >
+                                    <option value="stand_by">Stand-by</option>
+                                    <option value="confirme">Confirmé</option>
+                                    <option value="annule">Annulé</option>
+                                </select>
+                            </div>
+                        </li>
+                    ))}
+                </ul>}
+                </>
             )}
 
             {gestionSalles && (
@@ -293,7 +386,7 @@ const DashBoard = () => {
                             ))}
                         </ul>
                     }
-                    
+
                     {showDeletedRooms &&
                         <ul className="rooms-list">
                             {salleSuppr.map((room) =>

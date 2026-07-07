@@ -11,6 +11,16 @@ const Profil = () => {
     const [editingResaId, setEditingResaId] = useState(null);
     const { role } = useContext(AuthContext);
 
+    const [showAllResa, setShowAllResa] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [showStandBy, setShowStandBy] = useState(false);
+    const [showAnnule, setShowAnnule] = useState(false);
+
+    const confirm = reservations.filter(resa => resa.statut === 'confirme');
+    const standby = reservations.filter(resa => resa.statut === 'stand_by');
+    const annule = reservations.filter(resa => resa.statut === 'annule');
+
+
     const admin = Array.isArray(role)
         ? role.includes("ROLE_ADMIN")
         : role === "ROLE_ADMIN";
@@ -82,7 +92,9 @@ const Profil = () => {
     const fetchReservations = async () => {
         try {
             const response = await getMyReservations();
-          
+            console.log(response.data);
+
+
 
             setReservations(response.data);
         } catch (error) {
@@ -189,66 +201,166 @@ const Profil = () => {
                 </form>
             )}
 
-         <div className="list-reservation">
-    <h1>Mes Réservations</h1>
-    {reservations.length == 0 ? (
-        <p>Vous n'avez aucune réservation</p>
-    ) : (
-        <ul className="rooms-list">
-            {reservations.map((resa) => (
-                <li key={resa.id}>
-                    {resa.salle.disponibilité ===false ? (
-                        <p>La salle {resa.salle.nom} est actuellement indisponible</p>
-                    ) : (
-                        editingResaId === resa.id ? (
-                            <form onSubmit={(e) => handleResaUpdateSubmit(e, resa.id)}>
-                                <h4>Modifier la réservation pour Salle {resa.salle.nom}</h4>
+            <div className="list-reservation">
+                <h1>Mes Réservations</h1>
+                {reservations.length == 0 ? (
 
-                                <label htmlFor="date">Date</label>
-                                <input type="date" id="date" required value={resaFormData.date} onChange={handleResaFormChange} />
+                    <p>Vous n'avez aucune réservation</p>) : (
+                    <>
+                        <ul className="admin-list">
+                            <li className="adminChoices" onClick={() => { setShowAllResa(true), setShowAnnule(false), setShowConfirm(false), setShowStandBy(false) }}>Afficher tout</li>
+                            <li className="adminChoices" onClick={() => { setShowAllResa(false), setShowAnnule(false), setShowConfirm(true), setShowStandBy(false) }}>Réservations confirmées</li>
+                            <li className="adminChoices" onClick={() => { setShowAllResa(false), setShowAnnule(false), setShowConfirm(false), setShowStandBy(true) }}>Réservations en attente</li>
+                            <li className="adminChoices" onClick={() => { setShowAllResa(false), setShowAnnule(true), setShowConfirm(false), setShowStandBy(false) }}>Réservation annulées</li>
+                        </ul>
+                    </>)}
 
-                                <label htmlFor="heure_debut">Début</label>
-                                <input type="time" id="heure_debut" required value={resaFormData.heure_debut} onChange={handleResaFormChange} />
+                {showAllResa && (
+                    <ul className="rooms-list">
+                        {reservations.map((resa) => (
+                            <li key={resa.id}>
+                                {resa.salle.disponibilité === false ? (
+                                    <p>La salle {resa.salle.nom} est actuellement indisponible</p>
+                                ) : (
+                                    editingResaId === resa.id ? (
+                                        <form onSubmit={(e) => handleResaUpdateSubmit(e, resa.id)}>
+                                            <h4>Modifier la réservation pour Salle {resa.salle.nom}</h4>
 
-                                <label htmlFor="heure_fin">Fin</label>
-                                <input type="time" id="heure_fin" required value={resaFormData.heure_fin} onChange={handleResaFormChange} />
+                                            <label htmlFor="date">Date</label>
+                                            <input type="date" id="date" required value={resaFormData.date} onChange={handleResaFormChange} />
 
-                                <div style={{ marginTop: '1rem' }}>
-                                    <button type="submit">Sauvegarder</button>
-                                    <button type="button" onClick={() => setEditingResaId(null)} style={{ marginLeft: '0.5rem' }}>
-                                        Annuler
-                                    </button>
-                                </div>
-                            </form>
-                        ) : (
-                            <>
-                                Salle <strong>{resa.salle.nom}</strong> située à {resa.salle.localisation} réservée le {resa.date_creation} <br />
-                                Événement prévu le {resa.date} de {resa.heure_debut} à {resa.heure_fin} <br />
-                                Statut : {resa.statut}
+                                            <label htmlFor="heure_debut">Début</label>
+                                            <input type="time" id="heure_debut" required value={resaFormData.heure_debut} onChange={handleResaFormChange} />
 
-                                {resa.statut === 'stand_by' && (
-                                    <div style={{ marginTop: '1rem' }}>
-                                        <button onClick={() => startEditing(resa)}>
-                                            Mettre à jour
-                                        </button>
-                                        <button
-                                            onClick={() => handleCancel(resa.id)}
-                                            style={{ marginLeft: '0.5rem', color: 'red' }}
-                                        >
-                                            Annuler la réservation
-                                        </button>
-                                    </div>
+                                            <label htmlFor="heure_fin">Fin</label>
+                                            <input type="time" id="heure_fin" required value={resaFormData.heure_fin} onChange={handleResaFormChange} />
+
+                                            <div style={{ marginTop: '1rem' }}>
+                                                <button type="submit">Sauvegarder</button>
+                                                <button type="button" onClick={() => setEditingResaId(null)} style={{ marginLeft: '0.5rem' }}>
+                                                    Annuler
+                                                </button>
+                                            </div>
+                                        </form>
+                                    ) : (
+                                        <>
+                                            Salle <strong>{resa.salle.nom}</strong> située à {resa.salle.localisation} réservée le {resa.date_creation} <br />
+                                            Événement prévu le {resa.date} de {resa.heure_debut} à {resa.heure_fin} <br />
+                                            Statut : {resa.statut}
+
+                                            {resa.statut === 'stand_by' && (
+                                                <div style={{ marginTop: '1rem' }}>
+                                                    <button onClick={() => startEditing(resa)}>
+                                                        Mettre à jour
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleCancel(resa.id)}
+                                                        style={{ marginLeft: '0.5rem', color: 'red' }}
+                                                    >
+                                                        Annuler la réservation
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </>
+                                    )
                                 )}
-                            </>
-                        )
-                    )}
-                </li>
-            ))}
-        </ul>
-    )}
-</div>
+                            </li>
+                        ))}
+                    </ul>
+
+                )}
+                {showStandBy && (
+                    <ul className="rooms-list">
+                        {standby.map((resa) => (
+                            <li key={resa.id}>
+                                {resa.salle.disponibilité === false ? (
+                                    <p>La salle {resa.salle.nom} est actuellement indisponible</p>
+                                ) : (
+                                    editingResaId === resa.id ? (
+                                        <form onSubmit={(e) => handleResaUpdateSubmit(e, resa.id)}>
+                                            <h4>Modifier la réservation pour Salle {resa.salle.nom}</h4>
+
+                                            <label htmlFor="date">Date</label>
+                                            <input type="date" id="date" required value={resaFormData.date} onChange={handleResaFormChange} />
+
+                                            <label htmlFor="heure_debut">Début</label>
+                                            <input type="time" id="heure_debut" required value={resaFormData.heure_debut} onChange={handleResaFormChange} />
+
+                                            <label htmlFor="heure_fin">Fin</label>
+                                            <input type="time" id="heure_fin" required value={resaFormData.heure_fin} onChange={handleResaFormChange} />
+
+                                            <div style={{ marginTop: '1rem' }}>
+                                                <button type="submit">Sauvegarder</button>
+                                                <button type="button" onClick={() => setEditingResaId(null)} style={{ marginLeft: '0.5rem' }}>
+                                                    Annuler
+                                                </button>
+                                            </div>
+                                        </form>
+                                    ) : (
+                                        <>
+                                            Salle <strong>{resa.salle.nom}</strong> située à {resa.salle.localisation} réservée le {resa.date_creation} <br />
+                                            Événement prévu le {resa.date} de {resa.heure_debut} à {resa.heure_fin} <br />
+                                            Statut : {resa.statut}
+
+                                            {resa.statut === 'stand_by' && (
+                                                <div style={{ marginTop: '1rem' }}>
+                                                    <button onClick={() => startEditing(resa)}>
+                                                        Mettre à jour
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleCancel(resa.id)}
+                                                        style={{ marginLeft: '0.5rem', color: 'red' }}
+                                                    >
+                                                        Annuler la réservation
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </>
+                                    )
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+
+                )}
+                {showConfirm && (
+                    <ul className="rooms-list">
+                        {confirm.map((resa) => (
+                            <li key={resa.id}>
+                                {resa.salle.disponibilité === false ? (
+                                    <p>La salle {resa.salle.nom} est actuellement indisponible</p>
+                                ) : (
+                                    <>
+                                        Salle <strong>{resa.salle.nom} </strong> située à {resa.salle.localisation} réservée le {resa.date_creation} <br />
+                                        Événement prévu le {resa.date} de {resa.heure_debut} à {resa.heure_fin} <br />
+                                        Statut : {resa.statut}
+                                    </>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+                {showAnnule && (
+                    <ul className="rooms-list">
+                        {annule.map((resa) => (
+                            <li key={resa.id}>
+                                {resa.salle.disponibilité === false ? (
+                                    <p>La salle {resa.salle.nom} est actuellement indisponible</p>
+                                ) : (
+                                    <>
+                                        Salle <strong>{resa.salle.nom} </strong> située à {resa.salle.localisation} réservée le {resa.date_creation} <br />
+                                        Événement prévu le {resa.date} de {resa.heure_debut} à {resa.heure_fin} <br />
+                                        Statut : {resa.statut}
+                                    </>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
-        
+
+        </div>
+
     );
 };
 
