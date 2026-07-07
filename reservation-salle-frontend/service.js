@@ -80,7 +80,25 @@ export function getRoomById(id){
     return client.get(`/salle/get_one/${id}`);
 }
 
+export function addRoom(data){
+return client.post('/salle/create_room',data);
+}
 
+export function updateRoom(id,data){
+    return client.put(`/salle/update/${id}`, data);
+}
+
+export function softDelRoom(id){
+    return client.delete(`/salle/delete/${id}`);
+}
+
+export function getAllRoomsAdmin(){
+    return client.get('/salle/getAllRoomsAdmin');
+}
+
+export function restoreRoom(id){
+    return client.put(`/salle/restore/${id}`);
+}
 
 //  RESERVATIONS
 export function getMyReservations(){

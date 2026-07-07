@@ -228,7 +228,8 @@ final class ReservationsController extends AbstractController
             'salle' => [
                 'id' => $reservation->getSalle()?->getId(),
                 'nom' => $reservation->getSalle()?->getNom(),
-                'localisation' => $reservation->getSalle()?->getLocalisation()
+                'localisation' => $reservation->getSalle()?->getLocalisation(),
+                'disponibilité'=>$reservation->getSalle()?->isDisponibilité()
             ]
         ];
     }

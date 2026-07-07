@@ -5,7 +5,12 @@ import {
     getAllClients,
     deleteUser,
     getAllResa,
-    updateSatutResa
+    updateSatutResa,
+    addRoom,
+    updateRoom,
+    softDelRoom,
+    getAllRoomsAdmin,
+    restoreRoom
 } from "../../service";
 
 
@@ -23,23 +28,12 @@ const DashBoard = () => {
     const [gestionResa, setGestionResa] = useState(false);
 
     const [users, setUsers] = useState([]);
-    const [reservations, setReservations] = useState([])
 
     const fetchUsers = async () => {
         try {
             const response = await getAllClients();
 
             setUsers(response.data);
-        } catch (error) {
-            console.error(error)
-        }
-    }
-
-    const fetchResa = async () => {
-        try {
-            const response = await getAllResa();
-
-            setReservations(response.data);
         } catch (error) {
             console.error(error)
         }
@@ -57,6 +51,21 @@ const DashBoard = () => {
         }
     }
 
+
+
+
+    const [reservations, setReservations] = useState([]);
+
+    const fetchResa = async () => {
+        try {
+            const response = await getAllResa();
+
+            setReservations(response.data);
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
     const handleStatusChange = async (id, newStatut) => {
         try {
             await updateSatutResa(id, { statut: newStatut });
@@ -68,9 +77,105 @@ const DashBoard = () => {
         }
     };
 
+
+    const [salles, setSalles] = useState([]);
+    const [showDeletedRooms, setShowDeletedRooms] = useState(false);
+    const [showRoomsDispo, setShowRoomsDispo] = useState(false);
+    const [newRoom, setNewRoom] = useState(false);
+    const [editingRoomId, setEditingRoomId] = useState(null);
+
+    const fetchRooms = async () => {
+        try {
+            const response = await getAllRoomsAdmin();
+            setSalles(response.data);
+        } catch (error) {
+            console.error(error)
+        }
+    };
+
+    const sallesDispo = salles.filter(salle => salle.disponibilité == true);
+    const salleSuppr = salles.filter(salle => salle.disponibilité == false);
+
+
+    const handleRestoreRoom = async (id) => {
+        try {
+            await restoreRoom(id);
+            alert('Salle de nouveau disponible à la réservation');
+            fetchRooms();
+        } catch (error) {
+            console.error(error);
+            alert("Erreur lors de la restoration de la salle");
+        }
+    }
+
+    const handleDeleteRoom = async (id) => {
+        try {
+            await softDelRoom(id);
+            alert('Salle supprimée avec succès');
+            fetchRooms();
+        } catch (error) {
+            console.error(error);
+            alert("Erreur lors de la suppression de la salle");
+        }
+    }
+
+    const [formData, setFormData] = useState({
+        nom: '',
+        capacite: '',
+        description: '',
+        localisation: '',
+        equipements: ''
+    })
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.id]: e.target.value
+        });
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await addRoom(formData)
+            alert('Salle créée avec succès');
+            setNewRoom(false);
+            fetchRooms()
+        } catch (error) {
+            console.error(error);
+
+        }
+    }
+
+    const startEditingRoom = (room) => {
+        setEditingRoomId(room.id);
+        setFormData({
+            nom: room.nom || '',
+            capacite: room.capacite || '',
+            description: room.description || '',
+            localisation: room.localisation || '',
+            equipements: room.equipements || ''
+        });
+    }
+
+    const handleSubmitUpdate = async (e) => {
+        e.preventDefault();
+        try {
+            await updateRoom(editingRoomId, formData);
+            alert('Salle mise à jour avec succès');
+            setEditingRoomId(null);
+            fetchRooms();
+        } catch (error) {
+            console.error(error);
+            alert("Erreur lors de la modification de la salle");
+        }
+    }
+
+
     useEffect(() => {
         fetchUsers();
         fetchResa();
+        fetchRooms();
     }, []);
 
 
@@ -131,6 +236,137 @@ const DashBoard = () => {
                         </li>
                     ))}
                 </ul>
+            )}
+
+            {gestionSalles && (
+                <>
+                    <br />
+                    <h1>Gestion des Salles</h1>
+                    <ul className="admin-list">
+                        <li onClick={() => { setShowRoomsDispo(false), setShowDeletedRooms(false), setNewRoom(true) }} className="adminChoices">Ajouter une nouvelle salle</li>
+                        <li onClick={() => { setShowRoomsDispo(true), setShowDeletedRooms(false), setNewRoom(false) }} className="adminChoices">Editer ou supprimer une salle existante</li>
+                        <li onClick={() => { setShowRoomsDispo(false), setShowDeletedRooms(true), setNewRoom(false) }} className="adminChoices">Restaurer une salle supprimée</li>
+
+                    </ul>
+
+                    {showRoomsDispo &&
+                        <ul className="rooms-list">
+                            {sallesDispo.map((room) => (
+                                <li key={room.id}>
+                                    {editingRoomId === room.id ? (
+                                        /* 💡 Le formulaire d'édition s'affiche à la place de la ligne si on clique sur Modifier */
+                                        <form onSubmit={handleSubmitUpdate} className="form-create-room" style={{ margin: '1rem 0', maxWidth: '100%' }}>
+                                            <h3>Modifier la salle : {room.nom}</h3>
+
+                                            <label htmlFor="nom">Nom de la salle</label>
+                                            <input type="text" id="nom" value={formData.nom} onChange={handleChange} required />
+
+                                            <label htmlFor="capacite">Capacité</label>
+                                            <input type="number" id="capacite" value={formData.capacite} onChange={handleChange} required min="1" />
+
+                                            <label htmlFor="localisation">Localisation</label>
+                                            <input type="text" id="localisation" value={formData.localisation} onChange={handleChange} required />
+
+                                            <label htmlFor="equipements">Équipements</label>
+                                            <input type="text" id="equipements" value={formData.equipements} onChange={handleChange} required />
+
+                                            <label htmlFor="description">Description</label>
+                                            <textarea id="description" value={formData.description} onChange={handleChange} required rows="4" style={{ resize: 'none' }} />
+
+                                            <div className="form-actions" style={{ marginTop: '1rem' }}>
+                                                <button type="submit">Sauvegarder</button>
+                                                <button type="button" onClick={() => setEditingRoomId(null)} style={{ marginLeft: '0.5rem' }}>
+                                                    Annuler
+                                                </button>
+                                            </div>
+                                        </form>
+                                    ) : (
+                                        <>
+                                            Salle <strong>{room.nom}</strong> située à {room.localisation}
+                                            <div style={{ marginTop: '0.5rem' }}>
+                                                <button onClick={() => startEditingRoom(room)} style={{ marginRight: '0.5rem' }}>Modifier la salle</button>
+                                                <button onClick={() => handleDeleteRoom(room.id)} style={{ color: 'red' }}>Supprimer la salle</button>
+                                            </div>
+                                        </>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    }
+                    
+                    {showDeletedRooms &&
+                        <ul className="rooms-list">
+                            {salleSuppr.map((room) =>
+                                <li key={room.id} >Salle {room.nom} située à {room.localisation}
+                                    <button onClick={() => handleRestoreRoom(room.id)}>Restaurer la salle</button> </li>)}
+                        </ul>
+                    }
+                    {newRoom &&
+                        <form onSubmit={handleSubmit} className="form-create-room">
+                            <h2>Créer une nouvelle salle</h2>
+
+                            <label htmlFor="nom">Nom de la salle</label>
+                            <input
+                                type="text"
+                                id="nom"
+                                value={formData.nom}
+                                onChange={handleChange}
+                                required
+                            />
+
+                            <label htmlFor="capacite">Capacité (personnes)</label>
+                            <input
+                                type="number"
+                                id="capacite"
+                                value={formData.capacite}
+                                onChange={handleChange}
+                                required
+                                min="1"
+                            />
+
+                            <label htmlFor="localisation">Localisation / Adresse</label>
+                            <input
+                                type="text"
+                                id="localisation"
+                                value={formData.localisation}
+                                onChange={handleChange}
+                                required
+                            />
+
+                            <label htmlFor="equipements">Équipements dispo</label>
+                            <input
+                                type="text"
+                                id="equipements"
+                                value={formData.equipements}
+                                onChange={handleChange}
+                                required
+                            />
+
+                            <label htmlFor="description">Description de la salle</label>
+                            <textarea
+                                id="description"
+                                value={formData.description}
+                                onChange={handleChange}
+                                required
+                                rows="5"
+                                style={{ resize: 'none' }}
+                            />
+
+                            <div className="form-actions" style={{ marginTop: '1.5rem' }}>
+                                <button type="submit">Créer la salle</button>
+                                <button
+                                    type="button"
+                                    onClick={() => setNewRoom(false)}
+                                    style={{ marginLeft: '0.5rem', backgroundColor: 'transparent', border: '1px solid var(--border-color)' }}
+                                >
+                                    Annuler
+                                </button>
+                            </div>
+                        </form>
+                    }
+
+
+                </>
             )}
 
         </div>

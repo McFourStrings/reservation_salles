@@ -108,13 +108,13 @@ final class SalleController extends AbstractController
         if (!empty($data['capacite'])) {
             $salle->setCapacite($data['capacite']);
         }
-       if (array_key_exists('description', $data)) {
+        if (array_key_exists('description', $data)) {
             $salle->setDescription($data['description']);
         }
         if (!empty($data['localisation'])) {
             $salle->setLocalisation($data['localisation']);
         }
-       if (array_key_exists('equipements', $data)) {
+        if (array_key_exists('equipements', $data)) {
             $salle->setEquipements($data['equipements']);
         }
         if (isset($data['disponibilité'])) {
@@ -138,12 +138,12 @@ final class SalleController extends AbstractController
         ], Response::HTTP_OK);
     }
 
-    #[Route('/delete/{id}', name: 'delete',methods: ['DELETE'])]
+    #[Route('/delete/{id}', name: 'delete', methods: ['DELETE'])]
     #[IsGranted('ROLE_ADMIN', message: 'Accès refusé. ')]
 
     public function delete(?Salle $salle, EntityManagerInterface $em): JsonResponse
     {
-        if(!$salle){
+        if (!$salle) {
             return $this->json(['error' => 'Salle non trouvée'], Response::HTTP_NOT_FOUND);
         }
 
@@ -151,11 +151,58 @@ final class SalleController extends AbstractController
             return $this->json(['message' => 'Cette salle est déjà désactivée.'], Response::HTTP_BAD_REQUEST);
         }
 
-       $salle->setDisponibilité(false);
+        $salle->setDisponibilité(false);
         $em->flush();
 
         return $this->json([
-            'message'=>'Salle désactivée avec succès!'
+            'message' => 'Salle désactivée avec succès!'
+        ], Response::HTTP_OK);
+    }
+
+    #[Route('/getAllRoomsAdmin', name: 'getAllRoomsAdmin', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN', message: 'Accès refusé. ')]
+
+    public function getAllAdmin(SalleRepository $salleRepository): JsonResponse
+    {
+        $salles = $salleRepository->findAll();
+
+
+
+        $data = [];
+        foreach ($salles as $salle) {
+            $data[] = [
+                'id' => $salle->getId(),
+                'nom' => $salle->getNom(),
+                'capacite' => $salle->getCapacite(),
+                'description' => $salle->getDescription(),
+                'localisation' => $salle->getLocalisation(),
+                'equipements' => $salle->getEquipements(),
+                'disponibilité' => $salle->isDisponibilité()
+            ];
+        }
+
+        return $this->json($data, Response::HTTP_OK);
+    }
+
+
+    #[Route('/restore/{id}', name: 'restore', methods: ['PUT'])]
+    #[IsGranted('ROLE_ADMIN', message: 'Accès refusé. ')]
+
+    public function restore(?Salle $salle, EntityManagerInterface $em): JsonResponse
+    {
+        if (!$salle) {
+            return $this->json(['error' => 'Salle non trouvée'], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($salle->isDisponibilité()) {
+            return $this->json(['message' => 'Cette salle est déjà active.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $salle->setDisponibilité(true);
+        $em->flush();
+
+        return $this->json([
+            'message' => 'Salle désactivée avec succès!'
         ], Response::HTTP_OK);
     }
 }
