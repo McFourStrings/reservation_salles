@@ -361,10 +361,10 @@ const DashBoard = () => {
                                             <input type="text" id="localisation" value={formData.localisation} onChange={handleChange} required />
 
                                             <label htmlFor="equipements">Équipements</label>
-                                            <input type="text" id="equipements" value={formData.equipements} onChange={handleChange} required />
+                                            <input type="text" id="equipements" value={formData.equipements} onChange={handleChange}  />
 
                                             <label htmlFor="description">Description</label>
-                                            <textarea id="description" value={formData.description} onChange={handleChange} required rows="4" style={{ resize: 'none' }} />
+                                            <textarea id="description" value={formData.description} onChange={handleChange}  rows="4" style={{ resize: 'none' }} />
 
                                             <div className="form-actions" style={{ marginTop: '1rem' }}>
                                                 <button type="submit">Sauvegarder</button>
