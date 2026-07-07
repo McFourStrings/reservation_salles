@@ -819,6 +819,23 @@ button {
     color: #aaa;
 }
 
+.btn-retour{
+    background-color: #121212;
+    border: 1px solid #333;
+    color: #fff;
+    padding:1%;
+}
+
+.btn-retour:hover{
+    
+    transform: translateY(-1px);
+    border-color: var(--accent-cyan);
+    background-color: rgba(5, 5, 5, 0.4); 
+    box-shadow: 0 10px 20px rgba(0, 229, 255, 0.1);
+    color: var(--accent-cyan);
+
+}
+
 .form-create-room input[type="text"],
 .form-create-room input[type="number"],
 .form-create-room textarea {
@@ -834,9 +851,7 @@ button {
 }
 
 /* Évite le flash blanc natif des inputs type number sur certains navigateurs */
-.form-create-room input[type="number"] {
-    -moz-appearance: textfield;
-}
+
 .form-create-room input[type="number"]::-webkit-outer-spin-button,
 .form-create-room input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;

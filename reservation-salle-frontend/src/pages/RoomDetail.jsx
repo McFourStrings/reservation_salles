@@ -78,7 +78,7 @@ const RoomDetail = () => {
 
     return (
         <div className="room-detail-page">
-            <button onClick={() => navigate(-1)}>⬅️ Retour</button>
+            <button className="btn-retour" onClick={() => navigate(-1)}> Retour</button>
 
             {room && (
                 <div className="room-card">
